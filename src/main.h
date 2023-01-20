@@ -65,7 +65,7 @@
 
 // reflector ---------------------------------------------------
 
-#define NB_OF_MODULES                   10
+#define NB_OF_MODULES                   26
 //#define NB_OF_MODULES                   NB_MODULES_MAX
 
 // protocols ---------------------------------------------------
@@ -123,10 +123,10 @@
 #define YSF_PORT                        42000                               // UDP port
 #define YSF_KEEPALIVE_PERIOD            3                                   // in seconds
 #define YSF_KEEPALIVE_TIMEOUT           (YSF_KEEPALIVE_PERIOD*10)           // in seconds
-#define YSF_DEFAULT_NODE_TX_FREQ        437000000                           // in Hz
-#define YSF_DEFAULT_NODE_RX_FREQ        437000000                           // in Hz
-#define YSF_AUTOLINK_ENABLE             0                                   // 1 = enable, 0 = disable auto-link
-#define YSF_AUTOLINK_MODULE             'B'                                 // module for client to auto-link to
+#define YSF_DEFAULT_NODE_TX_FREQ        432700000                           // in Hz
+#define YSF_DEFAULT_NODE_RX_FREQ        432700000                           // in Hz
+#define YSF_AUTOLINK_ENABLE             1                                   // 1 = enable, 0 = disable auto-link
+#define YSF_AUTOLINK_MODULE             'R'                                 // module for client to auto-link to
 
 // G3 Terminal
 #define G3_PRESENCE_PORT                12346                               // UDP port
@@ -157,7 +157,7 @@
 
 // DMRid database -----------------------------------------------
 
-#define DMRIDDB_USE_RLX_SERVER          1                                   // 1 = use http, 0 = use local file
+#define DMRIDDB_USE_RLX_SERVER          0                                   // 1 = use http, 0 = use local file
 #define DMRIDDB_PATH                    "/xlxd/dmrid.dat"                   // local file path
 #define DMRIDDB_REFRESH_RATE            180                                 // in minutes
 
@@ -176,7 +176,7 @@
 
 // system paths -------------------------------------------------
 
-#define XML_PATH                        "/var/log/xlxd.xml"
+#define XML_PATH                        "/run/xlxd.xml"
 #define WHITELIST_PATH                  "/xlxd/xlxd.whitelist"
 #define BLACKLIST_PATH                  "/xlxd/xlxd.blacklist"
 #define INTERLINKLIST_PATH              "/xlxd/xlxd.interlink"
