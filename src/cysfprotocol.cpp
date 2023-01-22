@@ -183,6 +183,11 @@ void CYsfProtocol::Task(void)
                         std::cout << "YCS bridge connection" << std::endl;
                         newclient->SetReflectorModule(YSF_AUTOLINK_MODULE_YCS);
                     }
+                    else if ( Callsign.HasSameCallsign(CCallsign("ZL1JX")) )
+                    {
+                        std::cout << "ZL1JX YSF connection" << std::endl;
+                        newclient->SetReflectorModule('B');
+                    }
                     else
                     {
                         newclient->SetReflectorModule(YSF_AUTOLINK_MODULE);
