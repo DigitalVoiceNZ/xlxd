@@ -239,7 +239,7 @@ CPacketStream *CReflector::OpenStream(CDvHeaderPacket *DvHeader, CClient *client
                                   << " by user " << DvHeader->GetMyCallsign() << std::endl;
                         
                         // notify
-                        g_Reflector.OnStreamOpen(stream->GetUserCallsign());
+                        g_Reflector.OnStreamOpen(module, stream->GetUserCallsign(), client->GetCallsign());
                         
                     }
                     // unlock now
@@ -292,13 +292,15 @@ void CReflector::CloseStream(CPacketStream *stream)
         CClient *client = stream->GetOwnerClient();
         if ( client != NULL )
         {
+            const char module = GetStreamModule(stream);
+
             // client no longer a master
             client->NotAMaster();
 
             // notify
-            g_Reflector.OnStreamClose(stream->GetUserCallsign());
+            g_Reflector.OnStreamClose(module, stream->GetUserCallsign());
 
-            std::cout << "Closing stream of module " << GetStreamModule(stream) << std::endl;
+            std::cout << "Closing stream of module " << module << std::endl;
         }
 
         // release clients
@@ -485,11 +487,11 @@ void CReflector::JsonReportThread(CReflector *This)
                     case NOTIFICATION_STREAM_OPEN:
                         //std::cout << "Monitor notify station " << notification.GetCallsign() << "going ON air" << std::endl;
                         This->SendJsonStationsObject(Socket, Ip);
-                        This->SendJsonOnairObject(Socket, Ip, notification.GetCallsign());
+                        This->SendJsonOnairObject(Socket, Ip, notification.GetModule(), notification.GetCallsign(), notification.GetVia());
                         break;
                     case NOTIFICATION_STREAM_CLOSE:
                         //std::cout << "Monitor notify station " << notification.GetCallsign() << "going OFF air" << std::endl;
-                        This->SendJsonOffairObject(Socket, Ip, notification.GetCallsign());
+                        This->SendJsonOffairObject(Socket, Ip, notification.GetModule(), notification.GetCallsign());
                         break;
                    case NOTIFICATION_NONE:
                     default:
@@ -536,18 +538,18 @@ void CReflector::OnUsersChanged(void)
     m_Notifications.Unlock();
 }
 
-void CReflector::OnStreamOpen(const CCallsign &callsign)
+void CReflector::OnStreamOpen(const char module, const CCallsign &callsign, const CCallsign &via)
 {
-    CNotification notification(NOTIFICATION_STREAM_OPEN, callsign);
+    CNotification notification(NOTIFICATION_STREAM_OPEN, module, callsign, via);
 
     m_Notifications.Lock();
     m_Notifications.push(notification);
     m_Notifications.Unlock();
 }
 
-void CReflector::OnStreamClose(const CCallsign &callsign)
+void CReflector::OnStreamClose(const char module, const CCallsign &callsign)
 {
-    CNotification notification(NOTIFICATION_STREAM_CLOSE, callsign);
+    CNotification notification(NOTIFICATION_STREAM_CLOSE, module, callsign);
 
     m_Notifications.Lock();
     m_Notifications.push(notification);
@@ -744,28 +746,30 @@ void CReflector::SendJsonStationsObject(CUdpSocket &Socket, CIp &Ip)
     Socket.Send(Buffer, Ip);
 }
 
-void CReflector::SendJsonOnairObject(CUdpSocket &Socket, CIp &Ip, const CCallsign &Callsign)
+void CReflector::SendJsonOnairObject(CUdpSocket &Socket, CIp &Ip, const char module, const CCallsign &Callsign, const CCallsign &Via)
 {
     char Buffer[128];
     char sz[CALLSIGN_LEN+1];
+    char sv[CALLSIGN_LEN+1];
 
     // onair object
     Callsign.GetCallsignString(sz);
-    ::sprintf(Buffer, "{\"onair\":\"%s\"}", sz);
+    Via.GetCallsignString(sv);
+    ::sprintf(Buffer, "{\"onair\":\"%s\", \"mod\":\"%c\", \"via\":\"%s\"}", sz, module, sv);
 
     // and send
     //std::cout << Buffer << std::endl;
     Socket.Send(Buffer, Ip);
 }
 
-void CReflector::SendJsonOffairObject(CUdpSocket &Socket, CIp &Ip, const CCallsign &Callsign)
+void CReflector::SendJsonOffairObject(CUdpSocket &Socket, CIp &Ip, const char module, const CCallsign &Callsign)
 {
     char Buffer[128];
     char sz[CALLSIGN_LEN+1];
 
     // offair object
     Callsign.GetCallsignString(sz);
-    ::sprintf(Buffer, "{\"offair\":\"%s\"}", sz);
+    ::sprintf(Buffer, "{\"offair\":\"%s\",\"mod\":\"%c\"}", sz, module);
 
     // and send
     //std::cout << Buffer << std::endl;

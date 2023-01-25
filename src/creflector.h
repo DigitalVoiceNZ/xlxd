@@ -93,8 +93,8 @@ public:
     void OnPeersChanged(void);
     void OnClientsChanged(void);
     void OnUsersChanged(void);
-    void OnStreamOpen(const CCallsign &);
-    void OnStreamClose(const CCallsign &);
+    void OnStreamOpen(const char module, const CCallsign &, const CCallsign &);
+    void OnStreamClose(const char module, const CCallsign &);
     
 protected:
     // threads
@@ -114,8 +114,8 @@ protected:
     void SendJsonReflectorObject(CUdpSocket &, CIp &);
     void SendJsonNodesObject(CUdpSocket &, CIp &);
     void SendJsonStationsObject(CUdpSocket &, CIp &);
-    void SendJsonOnairObject(CUdpSocket &, CIp &, const CCallsign &);
-    void SendJsonOffairObject(CUdpSocket &, CIp &, const CCallsign &);
+    void SendJsonOnairObject(CUdpSocket &, CIp &, const char module, const CCallsign &, const CCallsign &);
+    void SendJsonOffairObject(CUdpSocket &, CIp &, const char module, const CCallsign &);
     
     // MAC address helpers
     bool UpdateListenMac(void);

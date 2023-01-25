@@ -38,6 +38,8 @@ CNotification::CNotification(const CNotification &Notification)
 {
     m_iId = Notification.m_iId;
     m_Callsign = Notification.m_Callsign;
+    m_module = Notification.m_module;
+    m_Via = Notification.m_Via;
 }
 
 CNotification::CNotification(int iId)
@@ -45,8 +47,17 @@ CNotification::CNotification(int iId)
     m_iId = iId;
 }
 
-CNotification::CNotification(int iId, const CCallsign &Callsign)
+CNotification::CNotification(int iId, const char cModule, const CCallsign &Callsign)
 {
     m_iId = iId;
+    m_module = cModule;
     m_Callsign = Callsign;
+}
+
+CNotification::CNotification(int iId, const char cModule, const CCallsign &Callsign, const CCallsign &Via)
+{
+    m_iId = iId;
+    m_module = cModule;
+    m_Callsign = Callsign;
+    m_Via = Via;
 }

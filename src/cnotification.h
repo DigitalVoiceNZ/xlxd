@@ -48,19 +48,24 @@ public:
     CNotification();
     CNotification(const CNotification &);
     CNotification(int);
-    CNotification(int, const CCallsign &);
+    CNotification(int, const char module, const CCallsign &);
+    CNotification(int, const char module, const CCallsign &, const CCallsign &);
     
     // destructor
     ~CNotification() {};
     
     // get
     int GetId(void) const                       { return m_iId; }
+    const char GetModule(void) const            { return m_module; }
     const CCallsign &GetCallsign(void) const    { return m_Callsign; }
+    const CCallsign &GetVia(void) const         { return m_Via; }
     
 protected:
     // data
     int         m_iId;
+    char        m_module;
     CCallsign   m_Callsign;
+    CCallsign   m_Via;
     
 };
 
