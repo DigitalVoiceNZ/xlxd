@@ -99,10 +99,11 @@ void CUser::GetJsonObject(char *Buffer)
         m_My.GetCallsignString(my);
         m_Rpt1.GetCallsignString(rpt1);
         
-        ::sprintf(sz, "{\"callsign\":\"%s\",\"node\":\"%s\",\"module\":\"%c\",\"time\":\"%s\"}",
+        ::sprintf(sz, "{\"callsign\":\"%s\",\"node\":\"%s\",\"module\":\"%c\",\"onmodule\":\"%c\",\"time\":\"%s\"}",
               my,
               rpt1,
               m_Rpt1.GetModule(),
+              m_Rpt2.GetModule(),
               mbstr);
         ::strcat(Buffer, sz);
     }

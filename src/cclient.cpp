@@ -112,11 +112,12 @@ void CClient::GetJsonObject(char *Buffer)
     {
         m_Callsign.GetCallsignString(cs);
         
-        ::sprintf(sz, "{\"callsign\":\"%s\",\"module\":\"%c\",\"linkedto\":\"%c\",\"time\":\"%s\"}",
+        ::sprintf(sz, "{\"callsign\":\"%s\",\"module\":\"%c\",\"linkedto\":\"%c\",\"time\":\"%s\",\"protocol\":\"%s\"}",
                   cs,
                   m_Callsign.GetModule(),
                   m_ReflectorModule,
-                  mbstr);
+                  mbstr,
+                  GetProtocolName());
         ::strcat(Buffer, sz);
     }
 }
