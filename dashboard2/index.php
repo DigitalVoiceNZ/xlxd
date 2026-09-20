@@ -1,4 +1,51 @@
 <?php
+// Check if we are serving HTTPS
+function isHttps() {
+    // Check standard HTTPS indicators
+    if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+        return true;
+    }
+    if (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443) {
+        return true;
+    }
+    // Check for proxy/load balancer headers
+    if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+        return true;
+    }
+    if (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on') {
+        return true;
+    }
+    return false;
+}
+
+session_start();
+
+// Security headers
+$isHttps = isHttps();
+header("X-Frame-Options: SAMEORIGIN");
+header("X-Content-Type-Options: nosniff");
+header("X-XSS-Protection: 1; mode=block");
+header("Referrer-Policy: strict-origin-when-cross-origin");
+header("Permissions-Policy: geolocation=(), microphone=(), camera=()");
+
+// Build CSP based on protocol
+// Allow external images via both http: and https: since we can't control external links
+$imgSrc = $isHttps ? "'self' data: https:" : "'self' data: http: https:";
+
+$csp = "default-src 'self'; " .
+        "script-src 'self' 'unsafe-inline'; " .
+        "style-src 'self' 'unsafe-inline'; " .
+        "img-src {$imgSrc}; " .
+        "connect-src 'self'; " .
+        "frame-ancestors 'self'";
+
+header("Content-Security-Policy: " . $csp);
+
+// Only add HSTS if served over HTTPS
+if ($isHttps) {
+        // HSTS: Force HTTPS for 1 year, but don't include subdomains (might be on local network)
+        header("Strict-Transport-Security: max-age=31536000");
+}
 
 /*
  *  This dashboard is being developed by the DVBrazil Team as a courtesy to
@@ -9,12 +56,12 @@
 if (file_exists("./pgs/functions.php")) {
     require_once("./pgs/functions.php");
 } else {
-    die("functions.php does not exist.");
+    die("Required file not found.");
 }
 if (file_exists("./pgs/config.inc.php")) {
     require_once("./pgs/config.inc.php");
 } else {
-    die("config.inc.php does not exist.");
+    die("Required file not found.");
 }
 
 if (!class_exists('ParseXML')) require_once("./pgs/class.parsexml.php");
@@ -44,7 +91,7 @@ if ($CallingHome['Active']) {
             @fwrite($Ressource, "\n" . '$Hash     = "' . $Hash . '";');
             @fwrite($Ressource, "\n\n" . '?>');
             @fclose($Ressource);
-            @exec("chmod 777 " . $CallingHome['HashFile']);
+            @exec("chmod 600 " . $CallingHome['HashFile']);
             $CallHomeNow = true;
         }
     } else {
@@ -79,12 +126,11 @@ if ($CallingHome['Active']) {
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="<?php echo $PageOptions['MetaDescription']; ?>"/>
-    <meta name="keywords" content="<?php echo $PageOptions['MetaKeywords']; ?>"/>
-    <meta name="author" content="<?php echo $PageOptions['MetaAuthor']; ?>"/>
-    <meta name="revisit" content="<?php echo $PageOptions['MetaRevisit']; ?>"/>
-    <meta name="robots" content="<?php echo $PageOptions['MetaAuthor']; ?>"/>
-
+    <meta name="description" content="<?php echo SafeOutputAttr($PageOptions['MetaDescription']); ?>"/>
+    <meta name="keywords" content="<?php echo SafeOutputAttr($PageOptions['MetaKeywords']); ?>"/>
+    <meta name="author" content="<?php echo SafeOutputAttr($PageOptions['MetaAuthor']); ?>"/>
+    <meta name="revisit" content="<?php echo SafeOutputAttr($PageOptions['MetaRevisit']); ?>"/>
+    <meta name="robots" content="<?php echo SafeOutputAttr($PageOptions['MetaAuthor']); ?>"/>
     <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
     <title><?php echo $Reflector->GetReflectorName(); ?> Reflector Dashboard</title>
     <link rel="icon" href="./favicon.ico" type="image/vnd.microsoft.icon">
@@ -113,8 +159,8 @@ if ($CallingHome['Active']) {
         if (($_SERVER['REQUEST_METHOD'] === 'POST') || isset($_GET['do'])) {
           echo '
          document.location.href = "./index.php';
-          if (isset($_GET['show'])) {
-            echo '?show=' . $_GET['show'];
+          if (isset($_GET['show']) && $_GET['show'] !== '') {
+            echo '?show=' . SafeOutput($_GET['show']);
           }
           echo '";';
         } else {
@@ -194,6 +240,15 @@ if ($CallingHome['Active']) {
                 }
             }
 
+            // Whitelist allowed values
+            if (!isset($_GET['show'])) {
+                $_GET['show'] = '';
+            }
+            $allowed_shows = ['users', 'repeaters', 'liveircddb', 'peers', 'reflectors', ''];
+            if (!in_array($_GET['show'], $allowed_shows, true)) {
+                $_GET['show'] = '';
+            }
+
             switch ($_GET['show']) {
                 case 'users'      :
                     require_once("./pgs/users.php");
@@ -222,7 +277,7 @@ if ($CallingHome['Active']) {
 
 <footer class="footer">
     <div class="container">
-        <p><a href="mailto:<?php echo $PageOptions['ContactEmail']; ?>"><?php echo $PageOptions['ContactEmail']; ?></a>
+        <p><a href="mailto:<?php echo SafeOutputAttr($PageOptions['ContactEmail']); ?>"><?php echo SafeOutput($PageOptions['ContactEmail']); ?></a>
         </p>
     </div>
 </footer>
