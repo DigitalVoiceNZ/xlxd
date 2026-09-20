@@ -109,6 +109,18 @@ void CXlxProtocol::Task(void)
         }
         else if ( IsValidConnectPacket(Buffer, &Callsign, Modules, &Version) )
         {
+            // BrandMeister sends null byte / empty string for modules
+            if ( (Modules[0] == 0) && Callsign.HasSameCallsignWithWildcard(CCallsign("BM*")) )
+            {
+                CPeerCallsignList *peerlist = g_GateKeeper.GetPeerList();
+                CCallsignListItem *item = peerlist->FindListItem(Callsign);
+                if ( item != NULL )
+                {
+                    ::strcpy(Modules, item->GetModules());
+                }
+                g_GateKeeper.ReleasePeerList();
+            }
+
             std::cout << "XLX ("
                       << Version.GetMajor() << "." << Version.GetMinor() << "." << Version.GetRevision()
                       << ") connect packet for modules " << Modules
@@ -153,6 +165,18 @@ void CXlxProtocol::Task(void)
         }
         else if ( IsValidAckPacket(Buffer, &Callsign, Modules, &Version)  )
         {
+            // BrandMeister sends null byte / empty string for modules
+            if ( (Modules[0] == 0) && Callsign.HasSameCallsignWithWildcard(CCallsign("BM*")) )
+            {
+                CPeerCallsignList *peerlist = g_GateKeeper.GetPeerList();
+                CCallsignListItem *item = peerlist->FindListItem(Callsign);
+                if ( item != NULL )
+                {
+                    ::strcpy(Modules, item->GetModules());
+                }
+                g_GateKeeper.ReleasePeerList();
+            }
+
             std::cout << "XLX ack packet for modules " << Modules << " from " << Callsign << " at " << Ip << std::endl;
             
             // callsign authorized?

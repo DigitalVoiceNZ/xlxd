@@ -128,20 +128,31 @@ bool CCallsignListItem::CheckListedModules(char *Modules) const
     
     if ( Modules != NULL )
     {
-        // build a list of common modules
-        char list[NB_MODULES_MAX+1];
-        list[0] = 0;
-        //
-        for ( int i = 0; i < ::strlen(Modules); i++ )
+        // If remote sent empty modules (BrandMeister sends 0x00 / empty string in ACK and Connect packets),
+        // fallback to the module(s) configured for this peer in xlxd.interlink
+        if ( (::strlen(Modules) == 0) && (::strlen(m_Modules) > 0) )
         {
-            if ( HasModuleListed(Modules[i]) )
-            {
-                ::strncat(list, &(Modules[i]), 1);
-                listed = true;
-            }
+            ::strcpy(Modules, m_Modules);
+            listed = true;
         }
-        ::strcpy(Modules, list);
+        else
+        {
+            // build a list of common modules
+            char list[NB_MODULES_MAX+1];
+            list[0] = 0;
+            //
+            for ( int i = 0; i < ::strlen(Modules); i++ )
+            {
+                if ( HasModuleListed(Modules[i]) )
+                {
+                    ::strncat(list, &(Modules[i]), 1);
+                    listed = true;
+                }
+            }
+            ::strcpy(Modules, list);
+        }
     }
     return listed;
 }
+
 
